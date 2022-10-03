@@ -69,4 +69,54 @@ router.post("/books/create", (req, res, next) => {
   })
 
 
+//UPDATE: display form
+router.get("/books/:bookId/edit", (req, res, next) => {
+    Book.findById(req.params.bookId)
+      .then( (bookDetails) => {
+        res.render("books/book-edit", bookDetails);
+      })
+      .catch( err => {
+        console.log("Error getting book details from DB...", err);
+        next();
+      });
+  });
+
+
+//UPDATE: display form
+router.get("/books/:bookId/edit", (req, res, next) => {
+    Book.findById(req.params.bookId)
+      .then( (bookDetails) => {
+        res.render("books/book-edit", bookDetails);
+      })
+      .catch( err => {
+        console.log("Error getting book details from DB...", err);
+        next();
+      });
+  });
+
+  
+//UPDATE: process form
+router.post("/books/:bookId/edit", (req, res, next) => {
+    const bookId = req.params.bookId;
+  
+    const newDetails = {
+      title: req.body.title,
+      author: req.body.author,
+      description: req.body.description,
+      rating: req.body.rating,
+    }
+  
+    Book.findByIdAndUpdate(bookId, newDetails)
+      .then(() => {
+        res.redirect(`/books/${bookId}`);
+      })
+      .catch(err => {
+        console.log("Error updating book...", err);
+        next();
+      });
+  });
+
+
+
+
 module.exports = router;
