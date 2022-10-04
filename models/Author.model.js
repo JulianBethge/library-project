@@ -2,7 +2,7 @@ const { Schema, model } = require('mongoose');
 
 const authorSchema = new Schema(
     {
-        name: String,
+        name: Object,
         age: Number,
         country: String
     },

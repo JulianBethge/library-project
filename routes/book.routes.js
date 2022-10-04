@@ -32,10 +32,18 @@ router.get("/books/:bookId", (req, res, next) => {
       })
   });
 
-  //CREATE: display a form
-  router.get("/books/create", (req, res, next) => {
-    res.render("books/book-create");
-  })
+//CREATE: display form
+router.get("/books/create", (req, res, next) => {
+  Author.find()
+    .then( (authorsArr) => {
+      res.render("books/book-create", { authorsArr });
+    })
+    .catch(err => {
+      console.log("error getting authors from DB", err);
+      next(err);
+    })
+})
+
 
 //CREATE: process form
 router.post("/books/create", (req, res, next) => {
