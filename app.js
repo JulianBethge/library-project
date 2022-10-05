@@ -18,13 +18,14 @@ const app = express();
 // ℹ️ This function is getting exported from the config folder. It runs most pieces of middleware
 require("./config")(app);
 
+//config sessions
+require('./config/session.config')(app);
+
 // default value for title local
 const capitalized = require("./utils/capitalized");
 const projectName = "library-project";
 
 app.locals.appTitle = `${capitalized(projectName)} created with IronLauncher`;
-
-
 
 // 👇 Start handling routes here
 // const index = require("./routes/index.routes");
@@ -46,3 +47,4 @@ app.use("/",  require("./routes/author.routes"))
 require("./error-handling")(app);
 
 module.exports = app;
+
