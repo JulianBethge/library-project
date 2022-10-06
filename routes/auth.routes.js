@@ -1,4 +1,5 @@
 const bcryptjs = require("bcryptjs");
+const mongoose = require("mongoose");
 const User = require("../models/User.model");
 
 const router = require("express").Router();
@@ -33,8 +34,13 @@ router.post("/signup", (req, res, next) => {
             res.redirect("/");
         })
         .catch(e => {
-            console.log("error creating user account", e)
-            next(e);
+            if (e instanceof mongoose.Error.ValidationError) {
+                res.status(400).render('auth/signup', { errorMessage: e.message });
+            } else if (e.code === 11000) {
+                res.status(400).render('auth/signup', { errorMessage: "Email already in use" });
+            } else {
+                next(e);
+            }
         });
 });
 
@@ -61,7 +67,7 @@ router.post("/login", (req, res, next) => {
             } else if (bcryptjs.compareSync(password, userFromDB.passwordHash)) {
                 //login sucessful
                 req.session.currentUser = userFromDB;
-                res.render('users/user-profile', { userInSession: req.session.currentUser });
+                res.redirect("/user-profile");
             } else {
                 //login failed
                 res.render('auth/login', { errorMessage: 'Incorrect credentials.' });
@@ -74,8 +80,9 @@ router.post("/login", (req, res, next) => {
 });
 
 
+//USER-PROFILE
 router.get('/user-profile', (req, res) => {
-    res.render('users/user-profile', { userInSession: req.session.currentUser });
+    res.render('users/user-profile');
 });
 
 

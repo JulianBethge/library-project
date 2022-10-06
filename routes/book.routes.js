@@ -1,8 +1,10 @@
 const Book = require("../models/Book.model");
 const Author = require("../models/Author.model");
 
-const router = require("express").Router();
 
+const isLoggedIn = require("../middleware/isLoggedIn");
+
+const router = require("express").Router();
 
 //READ: List all books
 router.get("/books", (req, res, next) => {
@@ -17,23 +19,26 @@ router.get("/books", (req, res, next) => {
     })
 });
 
-//READ Book details
+
+//READ: Book details
 router.get("/books/:bookId", (req, res, next) => {
-    const id = req.params.bookId;
-  
-    Book.findById(id)
-      .populate("author")
-      .then( bookDetails => {
-        res.render("books/book-details", bookDetails);
-      } )
-      .catch( err => {
-        console.log("error getting book details from DB", err);
-        next();
-      })
-  });
+  const id = req.params.bookId;
+
+  Book.findById(id)
+    .populate("author")
+    .then( bookDetails => {
+      res.render("books/book-details", bookDetails);
+    } )
+    .catch( err => {
+      console.log("error getting book details from DB", err);
+      next();
+    })
+});
+
 
 //CREATE: display form
-router.get("/books/create", (req, res, next) => {
+router.get("/books/create", isLoggedIn, (req, res, next) => {
+
   Author.find()
     .then( (authorsArr) => {
       res.render("books/book-create", { authorsArr });
@@ -46,100 +51,73 @@ router.get("/books/create", (req, res, next) => {
 
 
 //CREATE: process form
-router.post("/books/create", (req, res, next) => {
+router.post("/books/create", isLoggedIn, (req, res, next) => {
   
-    console.log(req.body)
-  
-    const bookDetails = {
-        title: req.body.title,
-        description: req.body.description,
-        author: req.body.author,
-        rating: req.body.rating,
-    
-    }
-    
-    // Book.create(bookDetails)
-    // .then(bookDetails => {
-    //   res.send("your book was created")
-    // })
-    // .catch(err => {
-    //   console.log("error creating new book in DB", err);
-    //   next();
-    // })
+  const bookDetails = {
+    title: req.body.title,
+    description: req.body.description,
+    author: req.body.author,
+    rating: req.body.rating,
+  }
 
-    //Redirect
-    Book.create(bookDetails)
+  Book.create(bookDetails)
     .then(bookDetails => {
       res.redirect("/books");
     })
     .catch(err => {
       console.log("error creating new book in DB", err);
-      next();
+      next(err);
     })
-  
-  })
+
+})
 
 
 //UPDATE: display form
-router.get("/books/:bookId/edit", (req, res, next) => {
-    Book.findById(req.params.bookId)
-      .then( (bookDetails) => {
-        res.render("books/book-edit", bookDetails);
-      })
-      .catch( err => {
-        console.log("Error getting book details from DB...", err);
-        next();
-      });
-  });
+router.get("/books/:bookId/edit", isLoggedIn, (req, res, next) => {
+  Book.findById(req.params.bookId)
+    .then( (bookDetails) => {
+      res.render("books/book-edit", bookDetails);
+    })
+    .catch( err => {
+      console.log("Error getting book details from DB...", err);
+      next();
+    });
+});
 
 
-//UPDATE: display form
-router.get("/books/:bookId/edit", (req, res, next) => {
-    Book.findById(req.params.bookId)
-      .then( (bookDetails) => {
-        res.render("books/book-edit", bookDetails);
-      })
-      .catch( err => {
-        console.log("Error getting book details from DB...", err);
-        next();
-      });
-  });
-
-  
 //UPDATE: process form
-router.post("/books/:bookId/edit", (req, res, next) => {
-    const bookId = req.params.bookId;
-  
-    const newDetails = {
-      title: req.body.title,
-      author: req.body.author,
-      description: req.body.description,
-      rating: req.body.rating,
-    }
-  
-    Book.findByIdAndUpdate(bookId, newDetails)
-      .then(() => {
-        res.redirect(`/books/${bookId}`);
-      })
-      .catch(err => {
-        console.log("Error updating book...", err);
-        next();
-      });
-  });
+router.post("/books/:bookId/edit", isLoggedIn, (req, res, next) => {
+  const bookId = req.params.bookId;
+
+  const newDetails = {
+    title: req.body.title,
+    author: req.body.author,
+    description: req.body.description,
+    rating: req.body.rating,
+  }
+
+  Book.findByIdAndUpdate(bookId, newDetails)
+    .then(() => {
+      res.redirect(`/books/${bookId}`);
+    })
+    .catch(err => {
+      console.log("Error updating book...", err);
+      next();
+    });
+});
+
 
 //DELETE
-router.post("/books/:bookId/delete", (req, res, next) => {
-    Book.findByIdAndDelete(req.params.bookId)
-      .then(() => {
-        res.redirect("/books");
-      })
-      .catch(err => {
-        console.log("Error deleting book...", err);
-        next();
-      });
-  
-  });
+router.post("/books/:bookId/delete", isLoggedIn, (req, res, next) => {
+  Book.findByIdAndDelete(req.params.bookId)
+    .then(() => {
+      res.redirect("/books");
+    })
+    .catch(err => {
+      console.log("Error deleting book...", err);
+      next();
+    });
 
-
+});
 
 module.exports = router;
